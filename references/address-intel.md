@@ -127,6 +127,10 @@ Read from `assets/tokens.json` (sourced from the official Pharos token
 registry at `docs.pharos.xyz/getting-started/token-registry`). All addresses are
 verified on-chain via `eth_getCode` + `decimals()`.
 
+This registry is intentionally explicit and finite. The scanner only checks the
+tokens listed here for the selected network; ERC-20 balances outside
+`assets/tokens.json` are not discovered or reported.
+
 | Network          | Token | Address                                      | Decimals |
 | ---------------- | ----- | -------------------------------------------- | -------- |
 | Atlantic Testnet | WPHRS | `0x838800b758277CC111B2d48Ab01e5E164f8E9471` | 18       |
@@ -320,6 +324,14 @@ Computed by `classify()` in `report.mjs`.
 | **Contract - DEX**    | DEX router/factory (named in explorer)                        |
 | **Contract - Protocol** | DeFi protocol (named in explorer)                           |
 | **Contract - Unknown**| Unverified, bytecode-only, no known pattern                  |
+
+Contract subtype labels are shallow heuristics. When explorer metadata is
+available, the implementation matches the target contract name against simple
+string patterns such as `token`, `router`, `factory`, `swap`, `dex`, `stake`,
+`lend`, `vault`, and `pool`. Contract names are not trustworthy security
+evidence: a malicious contract can choose a benign-looking name, and a legitimate
+contract can use a name outside these patterns. The classifier does not perform
+bytecode or deep behavior analysis.
 
 > When the explorer is unavailable, EOA labels are derived from nonce + balance
 > only, and explanations explicitly note that protocol diversity is

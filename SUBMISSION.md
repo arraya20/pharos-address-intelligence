@@ -14,7 +14,7 @@
 
 **One-sentence introduction:** Analyze any Pharos L1 address before interacting with it, using public on-chain data to classify the address and return a risk-scored report.
 
-**Capability description:** This Service Agent inspects a Pharos Atlantic Testnet or Pacific Mainnet address through read-only JSON-RPC calls. It detects whether the target is an EOA or contract, reports native PHRS/PROS balance, checks tracked ERC-20 token balances, reads nonce/sent transaction count, optionally enriches with explorer activity when available, classifies behavior, and returns a deterministic 0-100 risk score with supporting factors and a cautious recommendation.
+**Capability description:** This Service Agent inspects a Pharos Atlantic Testnet or Pacific Mainnet address through read-only JSON-RPC calls. It detects whether the target is an EOA or contract, reports native PHRS/PROS balance, checks tracked ERC-20 token balances, reads nonce/sent transaction count, optionally enriches with explorer activity when available, classifies behavior, and returns a deterministic 0-100 risk score with supporting factors and a cautious recommendation. Contract subtype classification is heuristic and name-based when explorer metadata is available; it is not bytecode or deep behavioral analysis.
 
 **Example tasks:**
 - Analyze `0x000000000022D473030F116dDEE9F6B43aC78BA3` on Pharos mainnet before I send funds.
@@ -25,7 +25,7 @@
 
 **Deliverables:** A structured address intelligence report containing network, address type, bytecode size when relevant, native balance, tracked ERC-20 holdings, nonce/sent transaction count, optional activity enrichment, behavioral classification, risk score, risk level, positive/risk factors, recommendation, and disclaimer.
 
-**Range not supported:** Non-Pharos chains, malformed addresses, private-key checks, transaction signing, token approvals, transfers, guaranteed safe/unsafe verdicts, legal/financial advice, untracked token discovery beyond the bundled token registry, and private off-chain identity attribution.
+**Range not supported:** Non-Pharos chains, malformed addresses, private-key checks, transaction signing, token approvals, transfers, guaranteed safe/unsafe verdicts, legal/financial advice, bytecode/deep behavior analysis, untracked token discovery beyond the bundled token registry, and private off-chain identity attribution.
 
 **Estimated execution duration:** 5-20 seconds for RPC-only analysis; up to 30 seconds when explorer enrichment is attempted and the explorer is slow or unavailable.
 
@@ -33,7 +33,7 @@
 
 ## Customer Service Strategy
 
-The Service Agent should first validate that the user provided a Pharos address. If the network is missing, use Atlantic testnet by default and mention that assumption in the response. Ask a follow-up question only when the address is missing, malformed, or the requested network is ambiguous. Before starting, confirm the scope as read-only public on-chain analysis; never request private keys, seed phrases, signatures, token approvals, or transaction permissions.
+The Service Agent should first validate that the user provided a Pharos address. If the network is missing, use Atlantic testnet by default and mention that assumption in the response. Ask a follow-up question only when the address is missing, malformed, or the requested network is ambiguous. Before starting, confirm the scope as read-only public on-chain analysis; never request private keys, seed phrases, signatures, token approvals, or transaction permissions. In the response, explain that contract subtype classification is based on shallow explorer-name heuristics when metadata is available, tracked token balances are limited to `assets/tokens.json`, and the risk score is a heuristic triage signal rather than a security guarantee.
 
 ## Runtime Configuration Recommendation
 

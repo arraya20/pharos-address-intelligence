@@ -49,6 +49,21 @@ Built for the **Pharos × Anvita Flow "Skill-to-Agent Dual Cascade" Hackathon**
 
 ---
 
+## Limitations
+
+- Contract subtype classification is a shallow heuristic. When explorer metadata
+  is available, the tool matches the target contract name against patterns such
+  as `token`, `router`, `factory`, `swap`, `dex`, `stake`, `lend`, `vault`, and
+  `pool`. Contract names can be spoofed, misleading, or simply not match these
+  patterns. This is not bytecode or deep behavioral analysis.
+- ERC-20 holdings are checked only against the manually bundled registry in
+  `assets/tokens.json` for the selected network. Token balances outside that
+  list are not discovered or reported.
+- Risk scores are coarse pre-flight heuristics, not security guarantees. Treat
+  them as triage signals and verify independently before sending value.
+
+---
+
 ## Why this matters for Pharos
 
 Pharos Pacific Mainnet launched April 2026 and the ecosystem is young — verified

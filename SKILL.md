@@ -134,6 +134,19 @@ Outputs a level: `LOW` (0-20), `MODERATE` (21-40), `ELEVATED` (41-60), `HIGH` (6
 - **EOA:** New · Casual · Active · Whale · Bot · MEV · Dormant
 - **Contract:** Token · DEX · Protocol · Unknown (unverified)
 
+## Limitations
+
+- Contract subtype classification is based on shallow explorer metadata. When a
+  target contract name is available, the classifier matches simple name patterns
+  such as `token`, `router`, `factory`, `swap`, `dex`, `stake`, `lend`, `vault`,
+  and `pool`. Names are spoofable and incomplete; do not present this as bytecode
+  or deep behavioral analysis.
+- Token holdings are limited to the bundled registry in `assets/tokens.json`.
+  Balances for ERC-20 tokens outside that list are not discovered.
+- Risk scores are coarse heuristics, not guarantees. Always frame the result as
+  a pre-flight signal and recommend independent verification before sending
+  value.
+
 ## Agent Guidelines
 
 1. Validate address: `0x` + 40 hex chars.
