@@ -208,3 +208,65 @@ test("rate limits repeated analyze requests from the same client", async () => {
     }
   );
 });
+
+test("ignores forwarded client IPs unless proxy trust is enabled", async () => {
+  await withServer(
+    {
+      rateLimitMax: 1,
+      rateLimitWindowMs: 60_000,
+      trustProxy: false,
+      analyze: async () => sampleAnalysis,
+    },
+    async (baseUrl) => {
+      const body = JSON.stringify({
+        address: "0x0000000000000000000000000000000000000001",
+        network: "mainnet",
+        offline: true,
+      });
+      const first = await fetch(`${baseUrl}/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Forwarded-For": "203.0.113.10" },
+        body,
+      });
+      const second = await fetch(`${baseUrl}/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Forwarded-For": "203.0.113.11" },
+        body,
+      });
+
+      assert.equal(first.status, 200);
+      assert.equal(second.status, 429);
+    }
+  );
+});
+
+test("uses forwarded client IPs for rate limiting when proxy trust is enabled", async () => {
+  await withServer(
+    {
+      rateLimitMax: 1,
+      rateLimitWindowMs: 60_000,
+      trustProxy: true,
+      analyze: async () => sampleAnalysis,
+    },
+    async (baseUrl) => {
+      const body = JSON.stringify({
+        address: "0x0000000000000000000000000000000000000001",
+        network: "mainnet",
+        offline: true,
+      });
+      const first = await fetch(`${baseUrl}/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Forwarded-For": "203.0.113.10" },
+        body,
+      });
+      const second = await fetch(`${baseUrl}/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Forwarded-For": "203.0.113.11" },
+        body,
+      });
+
+      assert.equal(first.status, 200);
+      assert.equal(second.status, 200);
+    }
+  );
+});

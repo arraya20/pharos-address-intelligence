@@ -20,3 +20,5 @@ services:
         value: 20000
       - key: CACHE_TTL_MS
         value: 15000
+      - key: TRUST_PROXY
+        value: true

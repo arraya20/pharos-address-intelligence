@@ -100,3 +100,36 @@ test("formats a human-readable report with risk evidence and disclaimer", () => 
   assert.match(text, /Risk Score:\s+40\/100 \(MODERATE\)/);
   assert.match(text, /Disclaimer: based on public on-chain data/);
 });
+
+test("uses native USD price to adjust mainnet whale threshold", () => {
+  const staticThresholdReport = buildReport({
+    address: "0x0000000000000000000000000000000000000003",
+    network: "Pharos Pacific Mainnet",
+    chainId: 1672,
+    analyzedAt: "2026-07-09T00:00:00.000Z",
+    addressType: "EOA",
+    nativeBalanceWei: "0x0",
+    nativeBalance: "150000",
+    tokenHoldings: [],
+    nonce: 12,
+    activity: {
+      available: true,
+      txCount: 12,
+      protocols: [],
+      ageDays: 30,
+    },
+    confidence: "full",
+  });
+  const priceAdjustedReport = buildReport({
+    ...staticThresholdReport,
+    nativePrice: {
+      available: true,
+      usd: 0.25,
+      source: "test",
+    },
+  });
+
+  assert.equal(staticThresholdReport.classification.label, "EOA - Whale");
+  assert.equal(priceAdjustedReport.classification.label, "EOA - Active");
+  assert.equal(priceAdjustedReport.classification.signals.whaleThreshold, 200000);
+});

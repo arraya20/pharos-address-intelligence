@@ -17,7 +17,10 @@
       "chainId": 1672,
       "nativeCurrency": "PROS",
       "whaleThresholdNative": 100000,
+      "whaleThresholdUsd": 50000,
       "dormantBalanceThreshold": 10000,
+      "dormantBalanceThresholdUsd": 5000,
+      "nativePriceUsdEnv": "PROS_PRICE_USD",
       "explorerUrl": "https://www.pharosscan.xyz",
       "explorerApiUrl": "https://www.pharosscan.xyz/api/v2",
       "verifierUrl": "https://api.socialscan.io/pharos/v1/explorer/command_api/contract"

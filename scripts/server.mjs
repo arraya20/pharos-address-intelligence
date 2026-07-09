@@ -7,6 +7,7 @@
 // pharos-contract-inspector. Only configured network RPCs are used.
 
 import http from "http";
+import net from "net";
 import { analyzeAddress } from "./lib/analyze.mjs";
 import { buildReport } from "./lib/report.mjs";
 
@@ -18,6 +19,7 @@ const DEFAULT_RATE_LIMIT_MAX = Number(process.env.RATE_LIMIT_MAX || 60);
 const DEFAULT_REQUEST_TIMEOUT_MS = Number(process.env.REQUEST_TIMEOUT_MS || 20_000);
 const DEFAULT_CACHE_TTL_MS = Number(process.env.CACHE_TTL_MS || 15_000);
 const ALLOWED_ORIGIN = process.env.CORS_ORIGIN || "*";
+const DEFAULT_TRUST_PROXY = process.env.TRUST_PROXY === "true";
 
 function sendJson(res, status, value, headers = {}) {
   if (res.writableEnded) return;
@@ -25,7 +27,20 @@ function sendJson(res, status, value, headers = {}) {
   res.end(JSON.stringify(value, null, status === 200 ? 2 : 0));
 }
 
-function clientKey(req) {
+function forwardedClientIp(req) {
+  const forwardedFor = req.headers["x-forwarded-for"];
+  const first = String(Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor || "")
+    .split(",")[0]
+    .trim();
+  if (first && net.isIP(first)) return first;
+
+  const realIp = String(req.headers["x-real-ip"] || "").trim();
+  if (realIp && net.isIP(realIp)) return realIp;
+  return null;
+}
+
+function clientKey(req, trustProxy = false) {
+  if (trustProxy) return forwardedClientIp(req) || req.socket.remoteAddress || "unknown";
   return req.socket.remoteAddress || "unknown";
 }
 
@@ -37,13 +52,14 @@ export function createServer({
   requestTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS,
   cacheTtlMs = DEFAULT_CACHE_TTL_MS,
   corsOrigin = ALLOWED_ORIGIN,
+  trustProxy = DEFAULT_TRUST_PROXY,
 } = {}) {
   const buckets = new Map();
   const cache = new Map();
 
   function checkRateLimit(req) {
     const now = Date.now();
-    const key = clientKey(req);
+    const key = clientKey(req, trustProxy);
     const bucket = buckets.get(key);
     if (!bucket || now >= bucket.resetAt) {
       buckets.set(key, { count: 1, resetAt: now + rateLimitWindowMs });

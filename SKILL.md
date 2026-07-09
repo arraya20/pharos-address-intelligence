@@ -85,6 +85,7 @@ configure `CORS_ORIGIN`, `RATE_LIMIT_MAX`, `MAX_BODY_BYTES`,
 | Address type (EOA/Contract) + bytecode size | `eth_getCode` | ✅ RPC |
 | Native balance (PHRS/PROS) | `eth_getBalance` | ✅ RPC |
 | ERC-20 token holdings | `eth_call balanceOf` on known tokens | ✅ RPC |
+| ERC-20 token discovery | Explorer API token balances | ⚠️ best-effort |
 | Sent-tx count (nonce) | `eth_getTransactionCount` | ✅ RPC |
 | Activity: first/last seen, tx count, protocols | Explorer API | ⚠️ best-effort |
 | Classification label (EOA/Contract + subtype) | Derived from above | ✅ (partial if activity missing) |
@@ -141,11 +142,24 @@ Outputs a level: `LOW` (0-20), `MODERATE` (21-40), `ELEVATED` (41-60), `HIGH` (6
   such as `token`, `router`, `factory`, `swap`, `dex`, `stake`, `lend`, `vault`,
   and `pool`. Names are spoofable and incomplete; do not present this as bytecode
   or deep behavioral analysis.
-- Token holdings are limited to the bundled registry in `assets/tokens.json`.
-  Balances for ERC-20 tokens outside that list are not discovered.
+- Token holdings always include the bundled registry in `assets/tokens.json`.
+  When explorer enrichment is available, the tool also attempts dynamic token
+  discovery from explorer token balances. If explorer enrichment is unavailable,
+  balances outside the bundled registry are not discovered.
 - Risk scores are coarse heuristics, not guarantees. Always frame the result as
   a pre-flight signal and recommend independent verification before sending
   value.
+
+## Production Configuration
+
+- Set `TRUST_PROXY=true` only behind a trusted hosted proxy so rate limiting uses
+  `X-Forwarded-For` / `X-Real-IP`. Leave it unset for direct local serving.
+- Set `PROS_PRICE_USD` or `NATIVE_PRICE_USD` when a production price feed is
+  available. Mainnet whale and dormant-balance thresholds use USD targets when a
+  native price is available, then fall back to configured native thresholds.
+- Explorer enrichment runs contract metadata, activity, and token discovery calls
+  in parallel. If explorer calls fail, reports remain available with partial
+  confidence.
 
 ## Agent Guidelines
 

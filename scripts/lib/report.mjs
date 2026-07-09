@@ -23,11 +23,34 @@ function contractName(data) {
     : "";
 }
 
+function effectiveNativeThreshold(data, nativeKey, usdKey, fallback) {
+  const net = NET_BY_CHAIN.get(data.chainId);
+  const priceUsd = num(data.nativePrice?.usd);
+  const usdThreshold = num(net?.[usdKey]);
+  if (priceUsd > 0 && usdThreshold > 0) {
+    return {
+      value: usdThreshold / priceUsd,
+      source: "price-adjusted",
+      usdThreshold,
+      priceUsd,
+    };
+  }
+  return {
+    value: net?.[nativeKey] ?? fallback,
+    source: "native-config",
+  };
+}
+
+function formatThreshold(v) {
+  return Number.isInteger(v) ? String(v) : v.toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
+}
+
 // ---- Classification -------------------------------------------------------
 export function classify(data) {
   const act = data.activity && data.activity.available ? data.activity : null;
   const nativeBal = num(data.nativeBalance);
-  const whaleThreshold = NET_BY_CHAIN.get(data.chainId)?.whaleThresholdNative ?? DEFAULT_WHALE_THRESHOLD;
+  const whaleThresholdInfo = effectiveNativeThreshold(data, "whaleThresholdNative", "whaleThresholdUsd", DEFAULT_WHALE_THRESHOLD);
+  const whaleThreshold = whaleThresholdInfo.value;
   const txCount = act ? act.txCount : data.nonce;
   const freq = act && act.ageDays ? txCount / Math.max(act.ageDays, 1) : 0;
   const protocols = act?.protocols?.length ?? 0;
@@ -71,7 +94,7 @@ export function classify(data) {
       }
     } else if (nativeBal >= whaleThreshold) {
       label = "EOA - Whale";
-      explanation = `Holds >=${whaleThreshold} native units with moderate+ activity.`;
+      explanation = `Holds >=${formatThreshold(whaleThreshold)} native units with moderate+ activity.`;
     } else if (freq === 0 && act?.lastSeen && Date.now() - Date.parse(act.lastSeen) > 30 * 86_400_000) {
       label = "EOA - Dormant";
       explanation = "Previously active but no recent transactions (>30 days).";
@@ -88,14 +111,31 @@ export function classify(data) {
     }
   }
 
-  return { label, explanation, signals: { nativeBal, txCount, freq, protocols } };
+  return {
+    label,
+    explanation,
+    signals: {
+      nativeBal,
+      txCount,
+      freq,
+      protocols,
+      whaleThreshold,
+      whaleThresholdSource: whaleThresholdInfo.source,
+    },
+  };
 }
 
 // ---- Risk score -----------------------------------------------------------
 export function riskScore(data, classification) {
   const act = data.activity && data.activity.available ? data.activity : null;
   const nativeBal = num(data.nativeBalance);
-  const dormantBalance = NET_BY_CHAIN.get(data.chainId)?.dormantBalanceThreshold ?? DEFAULT_DORMANT_BALANCE;
+  const dormantBalanceInfo = effectiveNativeThreshold(
+    data,
+    "dormantBalanceThreshold",
+    "dormantBalanceThresholdUsd",
+    DEFAULT_DORMANT_BALANCE
+  );
+  const dormantBalance = dormantBalanceInfo.value;
   const hasTokens = (data.tokenHoldings || []).length > 0;
   let score = 0;
   const positives = [];

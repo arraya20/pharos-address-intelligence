@@ -22,6 +22,7 @@ Built for the **Pharos × Anvita Flow "Skill-to-Agent Dual Cascade" Hackathon**
 | EOA vs Contract detection (+ bytecode size) | `eth_getCode` | ✅ RPC |
 | Native balance (PHRS on testnet, PROS on mainnet) | `eth_getBalance` | ✅ RPC |
 | ERC-20 token holdings | `eth_call balanceOf` | ✅ RPC |
+| ERC-20 token discovery | Explorer API | ⚠️ best-effort |
 | Sent-transaction count (nonce) | `eth_getTransactionCount` | ✅ RPC |
 | Activity: first/last seen, tx count, protocols | Explorer API | ⚠️ best-effort |
 | Behavioral classification | Derived | ✅ (partial if activity missing) |
@@ -56,9 +57,10 @@ Built for the **Pharos × Anvita Flow "Skill-to-Agent Dual Cascade" Hackathon**
   as `token`, `router`, `factory`, `swap`, `dex`, `stake`, `lend`, `vault`, and
   `pool`. Contract names can be spoofed, misleading, or simply not match these
   patterns. This is not bytecode or deep behavioral analysis.
-- ERC-20 holdings are checked only against the manually bundled registry in
-  `assets/tokens.json` for the selected network. Token balances outside that
-  list are not discovered or reported.
+- ERC-20 holdings are always checked against the manually bundled registry in
+  `assets/tokens.json`. When the explorer API is available, the tool also uses
+  explorer token-balance discovery. If the explorer is unavailable, token
+  balances outside the bundled registry are not discovered or reported.
 - Risk scores are coarse pre-flight heuristics, not security guarantees. Treat
   them as triage signals and verify independently before sending value.
 
@@ -156,6 +158,9 @@ deployment:
 | `REQUEST_TIMEOUT_MS` | `20000` | Request socket timeout. |
 | `CACHE_TTL_MS` | `15000` | Short in-memory cache for duplicate analyses. |
 | `CORS_ORIGIN` | `*` | CORS origin. Set a specific origin for public deployments. |
+| `TRUST_PROXY` | `false` | Use `X-Forwarded-For`/`X-Real-IP` for rate limiting only behind a trusted proxy. |
+| `PROS_PRICE_USD` | unset | Optional PROS/USD override for price-adjusted mainnet whale/dormant thresholds. |
+| `NATIVE_PRICE_USD` | unset | Generic native-token USD fallback if a network-specific env var is not set. |
 
 `render.yaml` is included as a minimal hosted API example; it binds to
 `0.0.0.0`, runs `npm test` at build time, and starts with `npm run serve`.
@@ -176,6 +181,11 @@ scripts/inspect.mjs / scripts/server.mjs  ──►  CLI  /  HTTP API
   from `pharos-contract-inspector`) with retry + backoff for flaky public RPCs.
 - The explorer API is used only for enrichment (first/last seen, protocol names).
   Any failure is caught and reported as `available: false` — never fatal.
+- Explorer enrichment starts contract metadata, activity, and token discovery
+  calls in parallel to keep hosted requests bounded when the explorer is healthy.
+- Mainnet whale/dormant thresholds can auto-adjust from a USD target when a
+  native token price is supplied by `PROS_PRICE_USD`, `NATIVE_PRICE_USD`, or a
+  configured price feed.
 - Risk scoring is **deterministic and evidence-based** (no ML), per
   `references/address-intel.md`.
 

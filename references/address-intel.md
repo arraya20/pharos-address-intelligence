@@ -127,9 +127,11 @@ Read from `assets/tokens.json` (sourced from the official Pharos token
 registry at `docs.pharos.xyz/getting-started/token-registry`). All addresses are
 verified on-chain via `eth_getCode` + `decimals()`.
 
-This registry is intentionally explicit and finite. The scanner only checks the
-tokens listed here for the selected network; ERC-20 balances outside
-`assets/tokens.json` are not discovered or reported.
+This registry is intentionally explicit and finite. It is always scanned via RPC
+because it works even when the explorer is unavailable. When the explorer API is
+available, the implementation also calls the explorer token-balance endpoint for
+dynamic ERC-20 discovery. If explorer enrichment is unavailable, ERC-20 balances
+outside `assets/tokens.json` are not discovered or reported.
 
 | Network          | Token | Address                                      | Decimals |
 | ---------------- | ----- | -------------------------------------------- | -------- |
@@ -149,6 +151,16 @@ tokens listed here for the selected network; ERC-20 balances outside
 calls `ethCallSafe(token.address, encodeBalanceOf(addr))`, and reports each
 non-zero holding. `ethCallSafe` tolerates reverts (returns `{ok:false}`) so a
 single broken token contract never breaks the whole scan.
+
+When explorer enrichment is enabled, `analyze.mjs` also calls:
+
+```
+GET <explorerApiUrl>/addresses/<address>/tokens?type=ERC-20
+```
+
+The response is treated as untrusted external data and parsed defensively. Token
+discovery is best-effort; failures are recorded in `tokenDiscovery.reason` and do
+not fail the report.
 
 ---
 
@@ -262,6 +274,10 @@ When the explorer API returns an error, `analyze.mjs` sets
 classification falls back to the nonce (§4) for the `txCount` signal; frequency
 and age cannot be computed. The risk score is floored at MODERATE (see §9).
 
+Contract metadata, address activity, and token discovery are requested in
+parallel when explorer enrichment is enabled. Recent destination contract name
+lookups are also resolved in parallel with a cap of eight contracts.
+
 ---
 
 ## 7. Protocol Interaction Mapping (best-effort — explorer API)
@@ -346,6 +362,14 @@ bytecode or deep behavior analysis.
 Generate a risk score (0-100) based on all collected signals. Lower = safer,
 higher = riskier. Computed by `riskScore()` in `report.mjs`. Deterministic and
 evidence-based (no ML).
+
+For networks with USD target thresholds, the whale and dormant-balance cutoffs
+can be price-adjusted when `nativePrice.usd` is available. Pacific Mainnet uses
+`whaleThresholdUsd` and `dormantBalanceThresholdUsd` from `assets/networks.json`;
+the analyzer can populate `nativePrice` from `PROS_PRICE_USD`,
+`NATIVE_PRICE_USD`, or a configured `nativePriceUsdUrl`. If no price is
+available, scoring falls back to `whaleThresholdNative` and
+`dormantBalanceThreshold`.
 
 ### Risk Factors
 
