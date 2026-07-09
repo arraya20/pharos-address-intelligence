@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { analyzeAddress, formatUnits } from "../lib/analyze.js";
+import { analyzeAddress, formatUnits } from "../scripts/lib/analyze.mjs";
 
 test("rejects malformed addresses before making RPC calls", async () => {
   await assert.rejects(

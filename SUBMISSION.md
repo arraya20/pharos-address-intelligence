@@ -64,7 +64,7 @@ Rationale: one analysis is mostly RPC-bound and should usually finish within 5-3
 ```bash
 git clone https://github.com/arraya20/pharos-address-intelligence.git
 cd pharos-address-intelligence
-node inspect.js 0x000000000022D473030F116dDEE9F6B43aC78BA3 --network mainnet
+node scripts/inspect.mjs 0x000000000022D473030F116dDEE9F6B43aC78BA3 --network mainnet
 npm run serve
 ```
 
@@ -74,4 +74,4 @@ API:
 curl -X POST http://127.0.0.1:8800/analyze -H 'Content-Type: application/json' --data '{"address":"0x000000000022D473030F116dDEE9F6B43aC78BA3","network":"mainnet","offline":true}'
 ```
 
-**Notes:** Node.js >= 18, zero runtime npm dependencies. Supports Pharos Atlantic Testnet (688689, PHRS) and Pacific Mainnet (1672, RPC `https://rpc.pharos.xyz`, PROS). Core signals use pure JSON-RPC; `--offline` skips explorer enrichment but still uses the configured RPC. The explorer API (`pharosscan.xyz/api/v2`) is best-effort enrichment only. `lib/rpc.js` is reused from `pharos-contract-inspector`. 100% read-only - never requests a private key or sends a transaction. Package with `npm run package:skill` so Anvita Flow receives a zip whose top-level folder is `pharos-address-intelligence/` and whose `SKILL.md` frontmatter name matches that folder exactly.
+**Notes:** Node.js >= 18, zero runtime npm dependencies. Supports Pharos Atlantic Testnet (688689, PHRS) and Pacific Mainnet (1672, RPC `https://rpc.pharos.xyz`, PROS). Core signals use pure JSON-RPC; `--offline` skips explorer enrichment but still uses the configured RPC. The explorer API (`pharosscan.xyz/api/v2`) is best-effort enrichment only. `scripts/lib/rpc.mjs` is reused from `pharos-contract-inspector`. 100% read-only - never requests a private key or sends a transaction. Package with `npm run package:skill` so Anvita Flow receives a zip whose top-level folder is `pharos-address-intelligence/` and whose `SKILL.md` frontmatter name matches that folder exactly.

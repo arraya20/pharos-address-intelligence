@@ -1,4 +1,4 @@
-// analyze.js — collect on-chain signals for a Pharos address.
+// analyze.mjs — collect on-chain signals for a Pharos address.
 //
 // Design goals (mirrors pharos-contract-inspector):
 //   * Pure JSON-RPC for the core signals so the tool works even when the
@@ -10,10 +10,10 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { Rpc } from "./rpc.js";
+import { Rpc } from "./rpc.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.join(__dirname, "..");
+const ROOT = path.join(__dirname, "..", "..");
 
 const networks = JSON.parse(
   fs.readFileSync(path.join(ROOT, "assets", "networks.json"), "utf8")
@@ -22,7 +22,7 @@ const tokensByNet = JSON.parse(
   fs.readFileSync(path.join(ROOT, "assets", "tokens.json"), "utf8")
 );
 
-// Exposed for report.js so per-network thresholds (e.g. whale cutoff) stay
+// Exposed for report.mjs so per-network thresholds (e.g. whale cutoff) stay
 // config-driven rather than hardcoded.
 export const networksConfig = networks;
 

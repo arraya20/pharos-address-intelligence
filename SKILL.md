@@ -43,16 +43,16 @@ gracefully.
 
 ```bash
 # Inspect an address on Atlantic testnet (default)
-node inspect.js 0x000000000022D473030F116dDEE9F6B43aC78BA3 --network testnet
+node scripts/inspect.mjs 0x000000000022D473030F116dDEE9F6B43aC78BA3 --network testnet
 
 # Inspect on Pacific mainnet
-node inspect.js 0x000000000022D473030F116dDEE9F6B43aC78BA3 --network mainnet
+node scripts/inspect.mjs 0x000000000022D473030F116dDEE9F6B43aC78BA3 --network mainnet
 
 # Machine-readable JSON output
-node inspect.js 0xYourAddress --network mainnet --json
+node scripts/inspect.mjs 0xYourAddress --network mainnet --json
 
 # Skip explorer enrichment (pure RPC, fastest, partial confidence)
-node inspect.js 0xYourAddress --network mainnet --offline
+node scripts/inspect.mjs 0xYourAddress --network mainnet --offline
 ```
 
 `--offline` skips explorer enrichment only. The CLI still needs network access to
@@ -63,7 +63,7 @@ and nonce.
 
 ```bash
 # Start server (127.0.0.1:8800)
-npm run serve
+node scripts/server.mjs
 
 # Analyze via HTTP
 curl -X POST http://127.0.0.1:8800/analyze \
@@ -144,8 +144,9 @@ Outputs a level: `LOW` (0-20), `MODERATE` (21-40), `ELEVATED` (41-60), `HIGH` (6
 
 ## Anvita Flow Packaging
 
-Package the whole `pharos-address-intelligence/` folder, not just its contents.
-The frontmatter `name` above intentionally matches the folder name exactly. Use:
+Package a root `pharos-address-intelligence/` folder containing `SKILL.md`,
+`scripts/`, `references/`, and `assets/`. The frontmatter `name` above
+intentionally matches the folder name exactly. Use:
 
 ```bash
 npm run package:skill
@@ -165,13 +166,13 @@ console, run a debug session, complete the Agent Card, and publish after review.
 
 ```
 pharos-address-intelligence/
-├── inspect.js            # CLI orchestrator
-├── server.js             # Optional dependency-free HTTP API (port 8800)
-├── package.json
-├── lib/
-│   ├── rpc.js            # JSON-RPC client (fetch-based, retry/backoff) — reused from pharos-contract-inspector
-│   ├── analyze.js        # Signal collection (RPC + best-effort explorer)
-│   └── report.js         # Classification, risk score, text/JSON formatting
+├── scripts/
+│   ├── inspect.mjs       # CLI orchestrator
+│   ├── server.mjs        # Optional dependency-free HTTP API (port 8800)
+│   └── lib/
+│       ├── rpc.mjs       # JSON-RPC client (fetch-based, retry/backoff) — reused from pharos-contract-inspector
+│       ├── analyze.mjs   # Signal collection (RPC + best-effort explorer)
+│       └── report.mjs    # Classification, risk score, text/JSON formatting
 ├── assets/
 │   ├── networks.json     # Pharos testnet/mainnet config
 │   └── tokens.json       # Known ERC-20 registry per network

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildReport, formatText } from "../lib/report.js";
+import { buildReport, formatText } from "../scripts/lib/report.mjs";
 
 const baseContract = {
   address: "0x0000000000000000000000000000000000000001",

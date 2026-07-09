@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { once } from "node:events";
-import { createServer } from "../server.js";
+import { createServer } from "../scripts/server.mjs";
 
 const sampleAnalysis = {
   address: "0x0000000000000000000000000000000000000001",

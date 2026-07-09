@@ -1,4 +1,4 @@
-// rpc.js — minimal JSON-RPC client over fetch (Node 18+ has global fetch).
+// rpc.mjs — minimal JSON-RPC client over fetch (Node 18+ has global fetch).
 // No ethers provider dependency for raw calls keeps this resilient to RPC quirks.
 //
 // Public Pharos RPCs are observably flaky: under load, individual eth_call /

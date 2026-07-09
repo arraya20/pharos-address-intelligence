@@ -75,16 +75,16 @@ git clone https://github.com/arraya20/pharos-address-intelligence.git
 cd pharos-address-intelligence
 
 # Inspect an address on Atlantic testnet (default)
-node inspect.js 0x000000000022D473030F116dDEE9F6B43aC78BA3 --network testnet
+node scripts/inspect.mjs 0x000000000022D473030F116dDEE9F6B43aC78BA3 --network testnet
 
 # Inspect on Pacific mainnet
-node inspect.js 0x000000000022D473030F116dDEE9F6B43aC78BA3 --network mainnet
+node scripts/inspect.mjs 0x000000000022D473030F116dDEE9F6B43aC78BA3 --network mainnet
 
 # Machine-readable JSON
-node inspect.js 0xYourAddress --network mainnet --json
+node scripts/inspect.mjs 0xYourAddress --network mainnet --json
 
 # Pure RPC only (skip explorer enrichment — fastest, partial confidence)
-node inspect.js 0xYourAddress --network mainnet --offline
+node scripts/inspect.mjs 0xYourAddress --network mainnet --offline
 ```
 
 > `--offline` means "skip explorer enrichment." Core analysis still reads the
@@ -150,14 +150,14 @@ deployment:
 ## How It Works
 
 ```
-analyze.js  ──►  collect signals (RPC + best-effort explorer)
+scripts/lib/analyze.mjs  ──►  collect signals (RPC + best-effort explorer)
      │
-report.js   ──►  classify()  +  riskScore()  +  formatText()/JSON
+scripts/lib/report.mjs   ──►  classify()  +  riskScore()  +  formatText()/JSON
      │
-inspect.js / server.js  ──►  CLI  /  HTTP API
+scripts/inspect.mjs / scripts/server.mjs  ──►  CLI  /  HTTP API
 ```
 
-- Core signals use a minimal `fetch`-based JSON-RPC client (`lib/rpc.js`, reused
+- Core signals use a minimal `fetch`-based JSON-RPC client (`scripts/lib/rpc.mjs`, reused
   from `pharos-contract-inspector`) with retry + backoff for flaky public RPCs.
 - The explorer API is used only for enrichment (first/last seen, protocol names).
   Any failure is caught and reported as `available: false` — never fatal.
@@ -170,13 +170,14 @@ inspect.js / server.js  ──►  CLI  /  HTTP API
 
 ```
 pharos-address-intelligence/
-├── inspect.js            # CLI orchestrator
-├── server.js             # Optional dependency-free HTTP API (port 8800)
+├── scripts/
+│   ├── inspect.mjs       # CLI orchestrator
+│   ├── server.mjs        # Optional dependency-free HTTP API (port 8800)
+│   └── lib/
+│       ├── rpc.mjs       # JSON-RPC client (fetch-based, retry/backoff)
+│       ├── analyze.mjs   # Signal collection (RPC + best-effort explorer)
+│       └── report.mjs    # Classification, risk score, formatting
 ├── package.json
-├── lib/
-│   ├── rpc.js            # JSON-RPC client (fetch-based, retry/backoff)
-│   ├── analyze.js        # Signal collection (RPC + best-effort explorer)
-│   └── report.js         # Classification, risk score, formatting
 ├── assets/
 │   ├── networks.json     # Pharos testnet/mainnet config
 │   └── tokens.json       # Known ERC-20 registry per network
@@ -199,8 +200,9 @@ npm run package:skill
 ```
 
 This creates `dist/pharos-address-intelligence.zip` with
-`pharos-address-intelligence/` as the top-level folder inside the zip, which is
-the structure required by the Anvita Flow upload parser.
+`pharos-address-intelligence/` as the top-level folder inside the zip. The upload
+artifact follows the Agent Skills structure: root `SKILL.md`, optional
+`scripts/`, `references/`, and `assets/`.
 Before submitting, run one debug session in the Anvita Flow console and set
 pricing to `Free` during beta to avoid paid-call failures.
 

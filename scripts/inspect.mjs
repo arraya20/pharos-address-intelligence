@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// inspect.js — CLI for Pharos Address Intelligence.
-//   node inspect.js <address> [--network mainnet|testnet] [--json] [--offline]
+// inspect.mjs — CLI for Pharos Address Intelligence.
+//   node scripts/inspect.mjs <address> [--network mainnet|testnet] [--json] [--offline]
 //
 // Pure read-only. No private key, no transactions, no gas.
 
-import { analyzeAddress } from "./lib/analyze.js";
-import { buildReport, formatText } from "./lib/report.js";
+import { analyzeAddress } from "./lib/analyze.mjs";
+import { buildReport, formatText } from "./lib/report.mjs";
 
 function parseArgs(argv) {
   const out = { address: null, network: "atlantic_testnet", json: false, offline: false };
@@ -24,7 +24,7 @@ function parseArgs(argv) {
 async function main() {
   const args = parseArgs(process.argv);
   if (!args.address) {
-    console.error("Usage: node inspect.js <address> [--network mainnet|testnet] [--json] [--offline]");
+    console.error("Usage: node scripts/inspect.mjs <address> [--network mainnet|testnet] [--json] [--offline]");
     process.exit(2);
   }
   try {

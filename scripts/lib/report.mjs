@@ -1,7 +1,7 @@
-// report.js — turn raw signals into a classification, risk score, and
+// report.mjs — turn raw signals into a classification, risk score, and
 // human-readable / JSON report. Mirrors the scoring matrix in references/.
 
-import { networksConfig } from "./analyze.js";
+import { networksConfig } from "./analyze.mjs";
 
 // chainId → network config (from assets/networks.json). Per-network economics
 // (PHRS vs PROS) make a single hardcoded balance threshold wrong, so the whale

@@ -2,8 +2,9 @@
 
 Detailed reference for analyzing any address on the Pharos blockchain. All
 operations are **read-only** — no transactions are sent, no gas is required, no
-private key is needed. The executable implementation lives in `lib/analyze.js`
-and `lib/report.js`; this document describes the underlying JSON-RPC calls.
+private key is needed. The executable implementation lives in
+`scripts/lib/analyze.mjs` and `scripts/lib/report.mjs`; this document describes the
+underlying JSON-RPC calls.
 
 > **Network Configuration**: RPC URLs, chain IDs, and explorer endpoints are read
 > from `assets/networks.json`. Defaults to the Atlantic testnet.
@@ -58,7 +59,7 @@ else:
     # → run additional contract checks (bytecode size, explorer name/verification)
 ```
 
-> **Implementation**: `analyze.js` calls `rpc.getCode(addrLower)` and sets
+> **Implementation**: `analyze.mjs` calls `rpc.getCode(addrLower)` and sets
 > `result.addressType` plus `result.bytecodeSize` when code is present.
 
 ---
@@ -76,7 +77,7 @@ eth_getBalance(address, "latest")
 ```
 
 Returns the balance in **wei** as a hex string. Divide by 10^18 for human units
-(`formatUnits(hex, 18)` in `analyze.js`).
+(`formatUnits(hex, 18)` in `analyze.mjs`).
 
 ### Classification Thresholds
 
@@ -91,7 +92,7 @@ Returns the balance in **wei** as a hex string. Divide by 10^18 for human units
 > **Note**: These thresholds are heuristics. The whale cutoff is
 > network-aware — read from `whaleThresholdNative` in `assets/networks.json`
 > (testnet: 10,000 PHRS, mainnet: 100,000 PROS ≈ $50k at PROS ≈ $0.50, Jul 2026).
-> `report.js` looks it up by `chainId`. Revisit the mainnet value as PROS price
+> `report.mjs` looks it up by `chainId`. Revisit the mainnet value as PROS price
 > moves; it only affects the `EOA - Whale` label, not the risk score.
 
 ---
@@ -140,7 +141,7 @@ verified on-chain via `eth_getCode` + `decimals()`.
 
 ### Multi-Token Scan
 
-`analyze.js` iterates every token in `tokens.json` for the selected network,
+`analyze.mjs` iterates every token in `tokens.json` for the selected network,
 calls `ethCallSafe(token.address, encodeBalanceOf(addr))`, and reports each
 non-zero holding. `ethCallSafe` tolerates reverts (returns `{ok:false}`) so a
 single broken token contract never breaks the whole scan.
@@ -196,7 +197,7 @@ Derived from the `eth_getCode` result in §1: `(hex.length - 2) / 2` bytes.
 
 ### Contract Name & Verification (best-effort — explorer API)
 
-When the explorer API is available, `analyze.js` resolves contract names via:
+When the explorer API is available, `analyze.mjs` resolves contract names via:
 
 ```
 GET <explorerApiUrl>/smart-contracts/<contract_address>
@@ -252,7 +253,7 @@ GET <explorerApiUrl>/addresses/<address>/transactions?limit=100
 
 ### Fallback when explorer is unavailable
 
-When the explorer API returns an error, `analyze.js` sets
+When the explorer API returns an error, `analyze.mjs` sets
 `activity = { available: false, reason }` and `confidence = "partial"`. The
 classification falls back to the nonce (§4) for the `txCount` signal; frequency
 and age cannot be computed. The risk score is floored at MODERATE (see §9).
@@ -302,7 +303,7 @@ address has zero protocol interactions.
 ### Overview
 
 Combine all signals from previous sections into a single classification label.
-Computed by `classify()` in `report.js`.
+Computed by `classify()` in `report.mjs`.
 
 ### Classification Labels
 
@@ -331,7 +332,7 @@ Computed by `classify()` in `report.js`.
 ### Overview
 
 Generate a risk score (0-100) based on all collected signals. Lower = safer,
-higher = riskier. Computed by `riskScore()` in `report.js`. Deterministic and
+higher = riskier. Computed by `riskScore()` in `report.mjs`. Deterministic and
 evidence-based (no ML).
 
 ### Risk Factors

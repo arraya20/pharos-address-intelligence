@@ -1,5 +1,5 @@
-// server.js — dependency-free HTTP API wrapper for Pharos Address Intelligence.
-//   npm run serve   (listens on 127.0.0.1:8800)
+// server.mjs — dependency-free HTTP API wrapper for Pharos Address Intelligence.
+//   node scripts/server.mjs   (listens on 127.0.0.1:8800)
 //   POST /analyze  { "address": "0x...", "network": "mainnet"|"testnet", "offline": false }
 //   GET  /health   → { ok: true }
 //
@@ -7,8 +7,8 @@
 // pharos-contract-inspector. Only configured network RPCs are used.
 
 import http from "http";
-import { analyzeAddress } from "./lib/analyze.js";
-import { buildReport } from "./lib/report.js";
+import { analyzeAddress } from "./lib/analyze.mjs";
+import { buildReport } from "./lib/report.mjs";
 
 const PORT = process.env.PORT || 8800;
 const HOST = process.env.HOST || "127.0.0.1";
